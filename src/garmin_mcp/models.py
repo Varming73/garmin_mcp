@@ -145,3 +145,157 @@ class MCPResponse(BaseModel):
     data: Optional[Any] = Field(default=None, description="Response data")
     error: Optional[Dict[str, str]] = Field(default=None, description="Error information")
     message: Optional[str] = Field(default=None, description="Optional message")
+
+
+class UserProfileIdInput(BaseModel):
+    """Model for user profile ID input"""
+    user_profile_id: str = Field(..., min_length=1, description="User profile ID")
+
+
+class GearUuidInput(BaseModel):
+    """Model for gear UUID input"""
+    gear_uuid: str = Field(..., min_length=1, description="Gear UUID")
+
+
+class DeviceIdInput(BaseModel):
+    """Model for device ID input"""
+    device_id: str = Field(..., min_length=1, description="Device ID")
+
+
+class DeviceSolarInput(BaseModel):
+    """Model for device solar data input"""
+    device_id: str = Field(..., min_length=1, description="Device ID")
+    date: str = Field(..., description="Date in YYYY-MM-DD format")
+
+    @field_validator('date')
+    @classmethod
+    def validate_date_format(cls, v: str) -> str:
+        """Validate date format"""
+        try:
+            datetime.strptime(v, '%Y-%m-%d')
+            return v
+        except ValueError:
+            raise ValueError('Date must be in YYYY-MM-DD format')
+
+
+class WeightInput(BaseModel):
+    """Model for weight measurement input"""
+    weight: float = Field(..., gt=0, le=1000, description="Weight value (0-1000)")
+    unit_key: str = Field(default="kg", description="Unit of weight ('kg' or 'lb')")
+
+    @field_validator('unit_key')
+    @classmethod
+    def validate_unit(cls, v: str) -> str:
+        """Validate unit is kg or lb"""
+        if v.lower() not in ['kg', 'lb']:
+            raise ValueError('unit_key must be "kg" or "lb"')
+        return v.lower()
+
+
+class WeightWithTimestampsInput(BaseModel):
+    """Model for weight measurement with timestamps"""
+    weight: float = Field(..., gt=0, le=1000, description="Weight value (0-1000)")
+    unit_key: str = Field(default="kg", description="Unit of weight ('kg' or 'lb')")
+    date_timestamp: Optional[str] = Field(default=None, description="Local timestamp in format YYYY-MM-DDThh:mm:ss")
+    gmt_timestamp: Optional[str] = Field(default=None, description="GMT timestamp in format YYYY-MM-DDThh:mm:ss")
+
+    @field_validator('unit_key')
+    @classmethod
+    def validate_unit(cls, v: str) -> str:
+        """Validate unit is kg or lb"""
+        if v.lower() not in ['kg', 'lb']:
+            raise ValueError('unit_key must be "kg" or "lb"')
+        return v.lower()
+
+    @field_validator('date_timestamp', 'gmt_timestamp')
+    @classmethod
+    def validate_timestamp_format(cls, v: Optional[str]) -> Optional[str]:
+        """Validate timestamp format"""
+        if v is None:
+            return v
+        try:
+            datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
+            return v
+        except ValueError:
+            raise ValueError('Timestamp must be in format YYYY-MM-DDThh:mm:ss')
+
+
+class DeleteWeighInsInput(BaseModel):
+    """Model for deleting weight measurements"""
+    date: str = Field(..., description="Date in YYYY-MM-DD format")
+    delete_all: bool = Field(default=False, description="Whether to delete all measurements for the day")
+
+    @field_validator('date')
+    @classmethod
+    def validate_date_format(cls, v: str) -> str:
+        """Validate date format"""
+        try:
+            datetime.strptime(v, '%Y-%m-%d')
+            return v
+        except ValueError:
+            raise ValueError('Date must be in YYYY-MM-DD format')
+
+
+class GoalTypeInput(BaseModel):
+    """Model for goal type input"""
+    goal_type: str = Field(default="active", description="Type of goals: 'active', 'future', or 'past'")
+
+    @field_validator('goal_type')
+    @classmethod
+    def validate_goal_type(cls, v: str) -> str:
+        """Validate goal type"""
+        if v.lower() not in ['active', 'future', 'past']:
+            raise ValueError('goal_type must be "active", "future", or "past"')
+        return v.lower()
+
+
+class ChallengesPaginationInput(BaseModel):
+    """Model for challenges pagination (start >= 0)"""
+    start: int = Field(default=0, ge=0, description="Starting index (0 or greater)")
+    limit: int = Field(default=100, gt=0, le=100, description="Maximum number of items (1-100)")
+
+
+class BadgeChallengesPaginationInput(BaseModel):
+    """Model for badge challenges pagination (start >= 1)"""
+    start: int = Field(default=1, ge=1, description="Starting index (1 or greater)")
+    limit: int = Field(default=100, gt=0, le=100, description="Maximum number of items (1-100)")
+
+
+class ProgressSummaryInput(BaseModel):
+    """Model for progress summary between dates with metric"""
+    start_date: str = Field(..., description="Start date in YYYY-MM-DD format")
+    end_date: str = Field(..., description="End date in YYYY-MM-DD format")
+    metric: str = Field(..., min_length=1, description="Metric name (e.g., 'elevationGain', 'duration', 'distance', 'movingDuration')")
+
+    @field_validator('start_date', 'end_date')
+    @classmethod
+    def validate_date_format(cls, v: str) -> str:
+        """Validate date format"""
+        try:
+            datetime.strptime(v, '%Y-%m-%d')
+            return v
+        except ValueError:
+            raise ValueError('Date must be in YYYY-MM-DD format')
+
+    @field_validator('end_date')
+    @classmethod
+    def validate_date_order(cls, v: str, info) -> str:
+        """Validate that end_date is after start_date"""
+        data = info.data
+        start_date_str = data.get('start_date')
+        if start_date_str:
+            start = datetime.strptime(start_date_str, '%Y-%m-%d')
+            end = datetime.strptime(v, '%Y-%m-%d')
+            if end < start:
+                raise ValueError('end_date must be after or equal to start_date')
+        return v
+
+
+class WorkoutIdInput(BaseModel):
+    """Model for workout ID input"""
+    workout_id: int = Field(..., gt=0, description="Workout ID must be positive")
+
+
+class WorkoutJsonInput(BaseModel):
+    """Model for workout JSON data"""
+    workout_json: str = Field(..., min_length=1, description="JSON string containing workout data")
