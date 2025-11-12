@@ -88,8 +88,8 @@ def register_tools(app: FastMCP) -> FastMCP:
             profile = garmin_client.get_user_profile()
 
             if not profile:
-                logger.warning("No user profile information found")
-                return error_response("data_not_found", "No user profile information found")
+                logger.info("No user profile information found")
+                return not_found_response("user profile information", "current user")
 
             logger.info("Retrieved user profile")
             return success_response(profile, message="User profile retrieved")
@@ -115,8 +115,8 @@ def register_tools(app: FastMCP) -> FastMCP:
             settings = garmin_client.get_userprofile_settings()
 
             if not settings:
-                logger.warning("No user profile settings found")
-                return error_response("data_not_found", "No user profile settings found")
+                logger.info("No user profile settings found")
+                return not_found_response("user profile settings", "current user")
 
             logger.info("Retrieved user profile settings")
             return success_response(settings, message="User settings retrieved")
