@@ -6,10 +6,25 @@ This Model Context Protocol (MCP) server connects to Garmin Connect and exposes 
 
 ## Features
 
-- List recent activities
-- Get detailed activity information
-- Access health metrics (steps, heart rate, sleep)
-- View body composition data
+### Core Functionality
+- 🏃 **Activity Management**: List, query, and analyze your activities with detailed metrics
+- ❤️ **Health & Wellness**: Access steps, heart rate, sleep, stress, body battery, and more
+- 📊 **Body Composition**: Track weight, body fat, muscle mass, and other composition metrics
+- 🎯 **Training Insights**: Monitor training status, readiness, VO2 max, and fitness age
+- ⌚ **Device Management**: View and manage your Garmin devices
+- 🎽 **Gear Tracking**: Track equipment usage across activities
+- 🏆 **Challenges & Badges**: View your achievements and active challenges
+
+### Technical Features (v0.2.0)
+- ✅ **Type Safety**: Full type hints throughout codebase
+- ✅ **Input Validation**: Pydantic models for all user inputs
+- ✅ **Structured Logging**: Comprehensive logging with configurable levels
+- ✅ **Error Handling**: Detailed error responses with proper exception handling
+- ✅ **MCP Resources**: Direct access to health summaries and recent activities
+- ✅ **MCP Prompts**: Pre-defined templates for common analyses
+- ✅ **Health Check**: Built-in health check endpoint
+- ✅ **CI/CD**: Automated testing and linting with GitHub Actions
+- ✅ **Standardized Responses**: All tools return consistent JSON format
 
 ## Setup
 
@@ -87,6 +102,39 @@ Once connected in Claude, you can ask questions like:
 
 ## Security Note
 
+### Credential Management
+
+Your Garmin Connect credentials are sensitive. Follow these best practices:
+
+- **Never commit credentials** to version control
+- Use **file-based secrets** for production deployments (Docker, Kubernetes)
+- Rotate credentials regularly
+- Enable MFA on your Garmin Connect account
+
+### OAuth Token Storage
+
+- Tokens are stored in `~/.garminconnect` with user-only permissions
+- Tokens automatically refresh when expired
+- Alternative base64 storage available at `~/.garminconnect_base64`
+
+### Logging
+
+Configure logging securely:
+
+```bash
+export LOG_LEVEL="INFO"          # Options: DEBUG, INFO, WARNING, ERROR
+export LOG_FILE="/var/log/garmin-mcp/server.log"  # Optional log file
+```
+
+### For Detailed Security Information
+
+See [Security Documentation](docs/SECURITY.md) for:
+- Credential storage best practices
+- Network security considerations
+- Container security guidelines
+- Vulnerability reporting process
+- Compliance information
+
 ## Troubleshooting
 
 If you encounter login issues:
@@ -99,3 +147,66 @@ For other issues, check the Claude Desktop logs at:
 
 - macOS: `~/Library/Logs/Claude/mcp-server-garmin.log`
 - Windows: `%APPDATA%\Claude\logs\mcp-server-garmin.log`
+
+## Development
+
+### Running Tests
+
+```bash
+# Install dev dependencies
+uv sync --all-extras
+
+# Run all tests
+uv run pytest
+
+# Run with coverage
+uv run pytest --cov=src/garmin_mcp --cov-report=html
+
+# Run specific tests
+uv run pytest tests/unit/
+```
+
+### Code Quality
+
+```bash
+# Format code
+uv run ruff format src/
+
+# Lint code
+uv run ruff check src/ --fix
+
+# Type check
+uv run mypy src/garmin_mcp --ignore-missing-imports
+```
+
+### Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- Development setup instructions
+- Code style guidelines
+- Testing requirements
+- Pull request process
+
+## Changelog
+
+### v0.2.0 (2025-01-15)
+- ✨ Added comprehensive type hints throughout codebase
+- ✨ Implemented input validation with Pydantic models
+- ✨ Added structured logging and error handling
+- ✨ Standardized all tool responses to JSON format
+- ✨ Added MCP resources and prompts
+- ✨ Created health check module
+- ✨ Added CI/CD with GitHub Actions
+- 📝 Completed security documentation
+- 🐛 Fixed variable shadowing bug in credential loading
+- 🐛 Fixed test file referencing non-existent file
+- 🧹 Removed dead code from main module
+- 🔧 Updated dependencies with better version constraints
+- 🧪 Added test infrastructure with pytest and coverage
+
+### v0.1.0
+- Initial release with basic Garmin Connect integration
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details

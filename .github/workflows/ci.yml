@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop, claude/* ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.10
+
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras
+
+      - name: Run ruff lint
+        run: |
+          uv run ruff check src/
+
+      - name: Run ruff format check
+        run: |
+          uv run ruff format --check src/
+
+      - name: Run mypy type checking
+        run: |
+          uv run mypy src/garmin_mcp --ignore-missing-imports
+        continue-on-error: true  # Don't fail on type errors initially
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+        with:
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras
+
+      - name: Run unit tests
+        run: |
+          uv run pytest tests/unit/ -v --cov=src/garmin_mcp --cov-report=xml --cov-report=term
+        env:
+          # Mock credentials for testing (won't actually connect)
+          GARMIN_EMAIL: test@example.com
+          GARMIN_PASSWORD: test_password
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.10
+
+      - name: Build package
+        run: |
+          uv build
+
+      - name: Check package
+        run: |
+          uv run twine check dist/*
+        continue-on-error: true
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.10
+
+      - name: Install dependencies
+        run: |
+          uv sync
+
+      - name: Run safety check
+        run: |
+          uv pip install safety
+          uv run safety check --json
+        continue-on-error: true
