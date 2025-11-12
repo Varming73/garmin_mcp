@@ -19,7 +19,7 @@ class AuthenticationError(GarminMCPError):
         super().__init__(message, error_code="authentication_error")
 
 
-class ConnectionError(GarminMCPError):
+class GarminConnectionError(GarminMCPError):
     """Raised when connection to Garmin Connect fails"""
 
     def __init__(self, message: str = "Connection to Garmin Connect failed") -> None:

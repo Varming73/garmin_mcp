@@ -40,8 +40,10 @@ class DateRangeInput(BaseModel):
     @classmethod
     def validate_date_order(cls, v: str, info) -> str:
         """Validate that end_date is after start_date"""
-        if 'start_date' in info.data:
-            start = datetime.strptime(info.data['start_date'], '%Y-%m-%d')
+        data = info.data
+        start_date_str = data.get('start_date')
+        if start_date_str:
+            start = datetime.strptime(start_date_str, '%Y-%m-%d')
             end = datetime.strptime(v, '%Y-%m-%d')
             if end < start:
                 raise ValueError('end_date must be after or equal to start_date')

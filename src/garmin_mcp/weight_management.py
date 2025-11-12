@@ -49,12 +49,12 @@ def register_tools(app):
             return f"Error retrieving daily weight measurements: {str(e)}"
     
     @app.tool()
-    async def delete_weigh_ins(date: str, delete_all: bool = True) -> str:
+    async def delete_weigh_ins(date: str, delete_all: bool = False) -> str:
         """Delete weight measurements for a specific date
-        
+
         Args:
             date: Date in YYYY-MM-DD format
-            delete_all: Whether to delete all measurements for the day
+            delete_all: Whether to delete all measurements for the day (default: False for safety)
         """
         try:
             result = garmin_client.delete_weigh_ins(date, delete_all=delete_all)
